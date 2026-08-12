@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demon Slayer Tic Tac Toe | by Jwan</title>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+<style>
+:root {
+    --black: #070707;
+    --dark: #110b0d;
+    --dark-red: #2b0d12;
+    --red: #b91c1c;
+    --bright-red: #ef4444;
+    --pink: #ff5c8a;
+    --white: #f8fafc;
+    --gray: #a1a1aa;
+    --border: #572027;
+    --gold: #facc15;
+    --green: #22c55e;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--white);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at 15% 20%, rgba(185,28,28,.2), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(255,92,138,.12), transparent 30%),
+        linear-gradient(135deg, #050505, #18090d, #050505);
+
+    overflow: hidden;
+}
+
+/* Dekorative Linien */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+        repeating-linear-gradient(
+            135deg,
+            transparent 0,
+            transparent 45px,
+            rgba(239,68,68,.025) 46px,
+            transparent 47px
+        );
+}
+
+/* =========================
+   OBERE LEISTE
+========================= */
+
+.account-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+}
+
+.author {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 20;
+
+    color: #ddd;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.author span {
+    color: var(--bright-red);
+}
+
+/* =========================
+   KONTO BUTTON
+========================= */
+
+.account-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 11px 17px;
+
+    background: rgba(20, 8, 10, .9);
+    color: white;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    cursor: pointer;
+    font-weight: bold;
+
+    transition: .2s;
+}
+
+.account-btn:hover {
+    border-color: var(--bright-red);
+
+    box-shadow:
+        0 0 20px rgba(239,68,68,.3);
+
+    transform: translateY(-2px);
+}
+
+.account-icon {
+    width: 19px;
+    height: 19px;
+}
+
+/* =========================
+   HAUPTKARTE
+========================= */
+
+.card {
+    position: relative;
+    z-index: 5;
+
+    width: 360px;
+    padding: 32px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30,13,17,.97),
+            rgba(9,7,8,.98)
+        );
+
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.7),
+        0 0 35px rgba(185,28,28,.12);
+
+    text-align: center;
+}
+
+.game-card {
+    width: 430px;
+}
+
+h1 {
+    margin: 0;
+
+    font-size: 28px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+
+    text-shadow:
+        0 0 15px rgba(239,68,68,.4);
+}
+
+.subtitle {
+    margin-top: 8px;
+
+    color: var(--gray);
+
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.line {
+    width: 85%;
+    height: 2px;
+
+    margin: 18px auto;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--bright-red),
+            transparent
+        );
+
+    box-shadow:
+        0 0 10px rgba(239,68,68,.5);
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.main-btn {
+    width: 100%;
+
+    padding: 13px;
+
+    margin-top: 10px;
+
+    border: 1px solid #7f1d1d;
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8f1d1d,
+            #450a0a
+        );
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.main-btn:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #c62828,
+            #650f0f
+        );
+
+    box-shadow:
+        0 0 20px rgba(239,68,68,.3);
+
+    transform: translateY(-2px);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 18px 0;
+
+    color: #71717a;
+    font-size: 11px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #3f2025;
+}
+
+/* =========================
+   INPUT
+========================= */
+
+input {
+    width: 100%;
+
+    padding: 13px;
+
+    background: #080808;
+    color: white;
+
+    border: 1px solid #4a2026;
+    border-radius: 8px;
+
+    outline: none;
+
+    text-align: center;
+
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 6px;
+}
+
+input:focus {
+    border-color: var(--bright-red);
+
+    box-shadow:
+        0 0 15px rgba(239,68,68,.2);
+}
+
+.status-small {
+    min-height: 20px;
+
+    margin-top: 12px;
+
+    color: var(--gray);
+    font-size: 13px;
+}
+
+/* =========================
+   SPIEL
+========================= */
+
+.game {
+    display: none;
+}
+
+.status {
+    min-height: 28px;
+
+    margin: 14px 0;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.board {
+    display: grid;
+
+    grid-template-columns: repeat(3, 105px);
+    grid-template-rows: repeat(3, 105px);
+
+    gap: 8px;
+
+    justify-content: center;
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            #241114,
+            #10090b
+        );
+
+    border: 1px solid #4d2027;
+    border-radius: 10px;
+
+    font-size: 48px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    transition: .18s;
+}
+
+.cell:hover {
+    background:
+        linear-gradient(
+            145deg,
+            #3a171c,
+            #160a0d
+        );
+
+    border-color: var(--bright-red);
+
+    transform: scale(1.025);
+
+    box-shadow:
+        0 0 18px rgba(185,28,28,.25);
+}
+
+.cell.x {
+    color: #ff4040;
+
+    text-shadow:
+        0 0 12px rgba(255,60,60,.8);
+}
+
+.cell.o {
+    color: var(--pink);
+
+    text-shadow:
+        0 0 12px rgba(255,92,138,.8);
+}
+
+.room {
+    margin-top: 18px;
+
+    padding: 10px;
+
+    border: 1px solid #32181d;
+    border-radius: 7px;
+
+    color: var(--gray);
+
+    font-size: 13px;
+}
+
+.room strong {
+    color: var(--bright-red);
+    letter-spacing: 4px;
+}
+
+.restart {
+    display: none;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0,0,0,.84);
+
+    backdrop-filter: blur(7px);
+
+    z-index: 100;
+}
+
+.modal {
+    width: 350px;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #211114,
+            #0c0809
+        );
+
+    border: 1px solid #64232c;
+    border-radius: 14px;
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.8),
+        0 0 35px rgba(185,28,28,.2);
+}
+
+.modal h2 {
+    margin: 0;
+
+    text-align: center;
+
+    letter-spacing: 2px;
+}
+
+.modal-description {
+    margin: 7px 0 22px;
+
+    color: #71717a;
+
+    text-align: center;
+
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px;
+
+    margin: 8px 0;
+
+    background: rgba(255,255,255,.025);
+
+    border: 1px solid #321a1e;
+    border-radius: 8px;
+}
+
+.stat-name {
+    color: #d4d4d8;
+}
+
+.stat-number {
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.win {
+    color: var(--green);
+}
+
+.loss {
+    color: var(--bright-red);
+}
+
+.draw {
+    color: var(--gold);
+}
+
+.time {
+    color: #60a5fa;
+}
+
+.close {
+    margin-top: 15px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:520px) {
+
+    .author {
+        top: 18px;
+        right: 15px;
+        font-size: 11px;
+    }
+
+    .account-container {
+        top: 12px;
+        left: 12px;
+    }
+
+    .account-btn {
+        padding: 9px 12px;
+    }
+
+    .account-btn span {
+        display: none;
+    }
+
+    .card {
+        width: calc(100% - 30px);
+        padding: 25px 15px;
+    }
+
+    .game-card {
+        width: calc(100% - 20px);
+    }
+
+    .board {
+        grid-template-columns: repeat(3, 82px);
+        grid-template-rows: repeat(3, 82px);
+    }
+
+    .cell {
+        font-size: 38px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     KOPF
+========================= -->
+
+<div class="account-container">
+
+    <button class="account-btn" id="accountBtn">
+
+        <svg
+            class="account-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+
+        <span>Konto</span>
+
+    </button>
+
+</div>
+
+<div class="author">
+    by <span>Jwan</span>
+</div>
+
+
+<!-- =========================
+     KONTO MODAL
+========================= -->
+
+<div class="overlay" id="accountOverlay">
+
+    <div class="modal">
+
+        <h2>⚔ Mein Konto</h2>
+
+        <div class="modal-description">
+            DEINE TIC TAC TOE STATISTIK
+        </div>
+
+        <div class="stat">
+            <span class="stat-name">🏆 Gewonnen</span>
+            <strong class="stat-number win" id="wins">0</strong>
+        </div>
+
+        <div class="stat">
+            <span class="stat-name">💀 Verloren</span>
+            <strong class="stat-number loss" id="losses">0</strong>
+        </div>
+
+        <div class="stat">
+            <span class="stat-name">🤝 Unentschieden</span>
+            <strong class="stat-number draw" id="draws">0</strong>
+        </div>
+
+        <div class="stat">
+            <span class="stat-name">⏱ Spielzeit</span>
+            <strong class="stat-number time" id="playTime">
+                0m 0s
+            </strong>
+        </div>
+
+        <button class="main-btn close" id="closeAccount">
+            Schließen
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     LOBBY
+========================= -->
+
+<div class="card lobby" id="lobby">
+
+    <h1>⚔ Tic Tac Toe</h1>
+
+    <div class="subtitle">
+        Demon Slayer Edition
+    </div>
+
+    <div class="line"></div>
+
+    <button class="main-btn" id="createRoom">
+        🔥 Spiel erstellen
+    </button>
+
+    <div class="divider">
+        ODER
+    </div>
+
+    <input
+        id="roomInput"
+        maxlength="4"
+        placeholder="RAUMCODE"
+        inputmode="numeric"
+    >
+
+    <button class="main-btn" id="joinRoom">
+        ⚔ Spiel beitreten
+    </button>
+
+    <div class="status-small" id="lobbyStatus"></div>
+
+</div>
+
+
+<!-- =========================
+     SPIEL
+========================= -->
+
+<div class="card game game-card" id="game">
+
+    <h1>⚔ Tic Tac Toe</h1>
+
+    <div class="subtitle">
+        Demon Slayer Edition
+    </div>
+
+    <div class="line"></div>
+
+    <div class="status" id="status">
+        Warte auf Gegner...
+    </div>
+
+    <div class="board">
+
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+
+    </div>
+
+    <button
+        class="main-btn restart"
+        id="restart"
+    >
+        🔥 Nächste Runde
+    </button>
+
+    <div class="room" id="roomDisplay"></div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   ELEMENTE
+===================================================== */
+
+const lobby =
+    document.getElementById("lobby");
+
+const game =
+    document.getElementById("game");
+
+const status =
+    document.getElementById("status");
+
+const lobbyStatus =
+    document.getElementById("lobbyStatus");
+
+const roomDisplay =
+    document.getElementById("roomDisplay");
+
+const restart =
+    document.getElementById("restart");
+
+const cells =
+    document.querySelectorAll(".cell");
+
+const accountBtn =
+    document.getElementById("accountBtn");
+
+const accountOverlay =
+    document.getElementById("accountOverlay");
+
+const closeAccount =
+    document.getElementById("closeAccount");
+
+
+/* =====================================================
+   ONLINE
+===================================================== */
+
+let peer = null;
+let connection = null;
+
+let roomCode = "";
+
+let mySymbol = "";
+let currentTurn = "X";
+let startingPlayer = "X";
+
+let board = Array(9).fill("");
+
+let gameActive = false;
+
+
+/* =====================================================
+   STATISTIK
+===================================================== */
+
+let stats =
+    JSON.parse(
+        localStorage.getItem(
+            "jwan_ttt_stats"
+        )
+    ) || {
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        seconds: 0
+    };
+
+
+function saveStats() {
+
+    localStorage.setItem(
+        "jwan_ttt_stats",
+        JSON.stringify(stats)
+    );
+
+}
+
+
+/* =====================================================
+   SPIELZEIT
+===================================================== */
+
+setInterval(() => {
+
+    stats.seconds++;
+
+    saveStats();
+
+}, 1000);
+
+
+/* =====================================================
+   GEWINNBEDINGUNGEN
+===================================================== */
+
+const wins = [
+
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+
+    [0,4,8],
+    [2,4,6]
+
+];
+
+
+/* =====================================================
+   LOBBY ANZEIGEN
+===================================================== */
+
+function showGame() {
+
+    lobby.style.display = "none";
+    game.style.display = "block";
+
+}
+
+
+/* =====================================================
+   SPIEL ERSTELLEN
+===================================================== */
+
+document
+.getElementById("createRoom")
+.addEventListener("click", () => {
+
+    roomCode =
+        Math.floor(
+            1000 +
+            Math.random() * 9000
+        ).toString();
+
+    mySymbol = "X";
+
+    lobbyStatus.textContent =
+        "Raum wird erstellt...";
+
+    peer =
+        new Peer(
+            "jwan-ttt-" + roomCode
+        );
+
+
+    peer.on("open", () => {
+
+        showGame();
+
+        status.textContent =
+            "Warte auf deinen Gegner...";
+
+        roomDisplay.innerHTML =
+            "Raum-Code: <strong>" +
+            roomCode +
+            "</strong>";
+
+    });
+
+
+    peer.on("connection", conn => {
+
+        connection = conn;
+
+        setupConnection();
+
+        gameActive = true;
+
+        currentTurn = "X";
+
+        status.textContent =
+            "⚔ Gegner ist da! Du bist X.";
+
+    });
+
+
+    peer.on("error", error => {
+
+        console.error(error);
+
+        alert(
+            "Der Raum konnte nicht erstellt werden."
+        );
+
+    });
+
+});
+
+
+/* =====================================================
+   SPIEL BEITRETEN
+===================================================== */
+
+document
+.getElementById("joinRoom")
+.addEventListener("click", () => {
+
+    const code =
+        document
+        .getElementById("roomInput")
+        .value
+        .trim();
+
+    if (!/^\d{4}$/.test(code)) {
+
+        alert(
+            "Bitte einen gültigen 4-stelligen Raumcode eingeben."
+        );
+
+        return;
+
+    }
+
+    roomCode = code;
+    mySymbol = "O";
+
+    lobbyStatus.textContent =
+        "Verbinde mit Raum...";
+
+    peer = new Peer();
+
+
+    peer.on("open", () => {
+
+        connection =
+            peer.connect(
+                "jwan-ttt-" + roomCode
+            );
+
+        setupConnection();
+
+        showGame();
+
+        status.textContent =
+            "Verbinde mit Spieler X...";
+
+        roomDisplay.innerHTML =
+            "Raum-Code: <strong>" +
+            roomCode +
+            "</strong>";
+
+    });
+
+
+    peer.on("error", error => {
+
+        console.error(error);
+
+        alert(
+            "Der Raum wurde nicht gefunden."
+        );
+
+        location.reload();
+
+    });
+
+});
+
+
+/* =====================================================
+   VERBINDUNG
+===================================================== */
+
+function setupConnection() {
+
+    connection.on("open", () => {
+
+        if (mySymbol === "O") {
+
+            gameActive = true;
+
+            currentTurn = "X";
+
+            status.textContent =
+                "⚔ Verbunden! Spieler X beginnt.";
+
+        }
+
+    });
+
+
+    connection.on("data", data => {
+
+        if (data.type === "move") {
+
+            makeMove(
+                data.index,
+                data.symbol,
+                false
+            );
+
+        }
+
+
+        if (data.type === "restart") {
+
+            startingPlayer =
+                data.startingPlayer;
+
+            resetGame();
+
+        }
+
+    });
+
+
+    connection.on("close", () => {
+
+        gameActive = false;
+
+        status.textContent =
+            "💀 Dein Gegner hat das Spiel verlassen.";
+
+    });
+
+}
+
+
+/* =====================================================
+   FELD KLICK
+===================================================== */
+
+cells.forEach(cell => {
+
+    cell.addEventListener("click", () => {
+
+        const index =
+            Number(
+                cell.dataset.index
+            );
+
+
+        if (
+            !gameActive ||
+            board[index] !== "" ||
+            currentTurn !== mySymbol
+        ) {
+
+            return;
+
+        }
+
+
+        makeMove(
+            index,
+            mySymbol,
+            true
+        );
+
+    });
+
+});
+
+
+/* =====================================================
+   ZUG
+===================================================== */
+
+function makeMove(
+    index,
+    symbol,
+    send
+) {
+
+    if (board[index] !== "") {
+        return;
+    }
+
+    board[index] = symbol;
+
+    cells[index].textContent =
+        symbol;
+
+    cells[index].classList.add(
+        symbol.toLowerCase()
+    );
+
+
+    if (
+        send &&
+        connection &&
+        connection.open
+    ) {
+
+        connection.send({
+
+            type: "move",
+            index: index,
+            symbol: symbol
+
+        });
+
+    }
+
+
+    checkWinner();
+
+
+    if (gameActive) {
+
+        currentTurn =
+            currentTurn === "X"
+                ? "O"
+                : "X";
+
+        updateStatus();
+
+    }
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function updateStatus() {
+
+    if (currentTurn === mySymbol) {
+
+        status.textContent =
+            "🔥 Du bist am Zug!";
+
+    } else {
+
+        status.textContent =
+            "⚔ Gegner ist am Zug...";
+
+    }
+
+}
+
+
+/* =====================================================
+   GEWINNER
+===================================================== */
+
+function checkWinner() {
+
+    for (const combo of wins) {
+
+        const [a,b,c] = combo;
+
+        if (
+            board[a] &&
+            board[a] === board[b] &&
+            board[a] === board[c]
+        ) {
+
+            gameActive = false;
+
+            const winner =
+                board[a];
+
+
+            if (winner === mySymbol) {
+
+                status.textContent =
+                    "🏆 DU HAST GEWONNEN!";
+
+                stats.wins++;
+
+            } else {
+
+                status.textContent =
+                    "💀 DU HAST VERLOREN!";
+
+                stats.losses++;
+
+            }
+
+
+            saveStats();
+
+            restart.style.display =
+                "block";
+
+            return;
+
+        }
+
+    }
+
+
+    if (!board.includes("")) {
+
+        gameActive = false;
+
+        status.textContent =
+            "🤝 UNENTSCHIEDEN!";
+
+        stats.draws++;
+
+        saveStats();
+
+        restart.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =====================================================
+   NEUE RUNDE
+===================================================== */
+
+restart.addEventListener("click", () => {
+
+    startingPlayer =
+        startingPlayer === "X"
+            ? "O"
+            : "X";
+
+
+    resetGame();
+
+
+    if (
+        connection &&
+        connection.open
+    ) {
+
+        connection.send({
+
+            type: "restart",
+
+            startingPlayer:
+                startingPlayer
+
+        });
+
+    }
+
+});
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+function resetGame() {
+
+    board =
+        Array(9).fill("");
+
+    cells.forEach(cell => {
+
+        cell.textContent = "";
+
+        cell.classList.remove(
+            "x",
+            "o"
+        );
+
+    });
+
+    gameActive = true;
+
+    currentTurn =
+        startingPlayer;
+
+    restart.style.display =
+        "none";
+
+
+    if (currentTurn === mySymbol) {
+
+        status.textContent =
+            "🔥 Neue Runde! Du beginnst.";
+
+    } else {
+
+        status.textContent =
+            "⚔ Neue Runde! Gegner beginnt.";
+
+    }
+
+}
+
+
+/* =====================================================
+   ZEIT FORMATIEREN
+===================================================== */
+
+function formatTime(seconds) {
+
+    const hours =
+        Math.floor(seconds / 3600);
+
+    const minutes =
+        Math.floor(
+            (seconds % 3600) / 60
+        );
+
+    const secs =
+        seconds % 60;
+
+
+    if (hours > 0) {
+
+        return (
+            hours + "h " +
+            minutes + "m " +
+            secs + "s"
+        );
+
+    }
+
+
+    return (
+        minutes + "m " +
+        secs + "s"
+    );
+
+}
+
+
+/* =====================================================
+   KONTO ÖFFNEN
+===================================================== */
+
+accountBtn.addEventListener(
+    "click",
+    () => {
+
+        document.getElementById(
+            "wins"
+        ).textContent =
+            stats.wins;
+
+        document.getElementById(
+            "losses"
+        ).textContent =
+            stats.losses;
+
+        document.getElementById(
+            "draws"
+        ).textContent =
+            stats.draws;
+
+        document.getElementById(
+            "playTime"
+        ).textContent =
+            formatTime(
+                stats.seconds
+            );
+
+
+        accountOverlay.style.display =
+            "flex";
+
+    }
+);
+
+
+/* =====================================================
+   KONTO SCHLIESSEN
+===================================================== */
+
+closeAccount.addEventListener(
+    "click",
+    () => {
+
+        accountOverlay.style.display =
+            "none";
+
+    }
+);
+
+
+accountOverlay.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            accountOverlay
+        ) {
+
+            accountOverlay.style.display =
+                "none";
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   RAUMCODE
+===================================================== */
+
+document
+.getElementById("roomInput")
+.addEventListener(
+    "input",
+    function() {
+
+        this.value =
+            this.value
+            .replace(/\D/g, "")
+            .slice(0,4);
+
+    }
+);
+
+</script>
+
+</body>
+</html>
